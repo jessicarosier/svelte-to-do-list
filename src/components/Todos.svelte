@@ -1,100 +1,69 @@
 <script>
-    export let todos = []
 
-    let newTodoLabel = ''
-    $: newTodoId = totalTodos ? Math.max(...todos.map(t => t.id)) + 1 : 1
+    import { slide } from 'svelte/transition';
 
-    $: totalTodos = todos.length
-    $: completedTodos = todos.filter(todo => todo.completed).length
+  let toDoItems = [
+      {
+          name: "Study for exam.",
+          completed: true,
+      },
+      {
+          name: "Feed the dog.",
+          completed: false,
+      },
+      {
+          name: "Clean the cats litter box.",
+          completed: false,
+      },
+  ];
 
-    function removeTodo(todo) {
-        todos = todos.filter(t => t.id !== todo.id)
-    }
+  let name = "";
 
-    function addTodo() {
-        todos = [...todos, { id: newTodoId, label: newTodoLabel, completed: false }]
-        newTodoLabel = ''
-    }
+  function addToDo() {
+      const newItem = {
+          name: name,
+          completed: false,
+      }
 
-    let filter = 'all'
-    const filterTodos = (filter, todos) =>
-        filter === 'active' ? todos.filter(t => !t.completed) :
-            filter === 'completed' ? todos.filter(t => t.completed) :
-                todos
+      toDoItems = [...toDoItems, newItem]
+      name = "";
+  }
 
 </script>
 
-<!--NewTodo-->
-<form on:submit|preventDefault={addTodo}>
-  <h2 class="label-wrapper">
-    <label for="todo-0" class="label__lg">
-      What needs to be done?
-    </label>
-  </h2>
-  <input bind:value={newTodoLabel} type="text" id="todo-0" autocomplete="off" class="input input__lg" />
-  <button type="submit" disabled="" class="btn btn__primary btn__lg">
-    Add
-  </button>
-</form>
 
-<!-- Filter -->
-<div class="filters btn-group stack-exception">
-  <button class="btn toggle-btn" class:btn__primary={filter === 'all'} aria-pressed={filter === 'all'} on:click={()=> filter = 'all'} >
-    <span class="visually-hidden">Show</span>
-    <span>All</span>
-    <span class="visually-hidden">tasks</span>
-  </button>
-  <button class="btn toggle-btn" class:btn__primary={filter === 'active'} aria-pressed={filter === 'active'} on:click={()=> filter = 'active'} >
-    <span class="visually-hidden">Show</span>
-    <span>Active</span>
-    <span class="visually-hidden">tasks</span>
-  </button>
-  <button class="btn toggle-btn" class:btn__primary={filter === 'completed'} aria-pressed={filter === 'completed'} on:click={()=> filter = 'completed'} >
-    <span class="visually-hidden">Show</span>
-    <span>Completed</span>
-    <span class="visually-hidden">tasks</span>
-  </button>
+<div>
+  <input type="text" bind:value={name} />
+  <button on:click={addToDo} >Add Todo</button>
 </div>
 
-<!-- TodosStatus -->
-<h2 id="list-heading">{completedTodos} out of {totalTodos} items completed</h2>
+<div>
+  <ul>
+    {#each toDoItems.filter(todo => todo.completed) as todo}
+      <li transition:slide>
+        {todo.name}
+        <input type="checkbox" bind:checked={todo.completed} />
+      </li>
+      {/each}
+  </ul>
 
-
-<!-- Todos -->
-<ul>
-  {#each filterTodos(filter, todos) as todo (todo.id)}
-    <li class="todo">
-          <input type="checkbox" id="todo-{todo.id}"
-                 on:click={() => todo.completed = !todo.completed}
-                 checked={todo.completed}
-          />
-          <label for="todo-{todo.id}" class="todo-label">
-            {todo.label}
-          </label>
-
-        <div class="btn-group">
-          <button type="button" class="btn">
-            Edit <span class="visually-hidden">{todo.name}</span>
-          </button>
-          <button type="button" class="btn btn__danger"
-                  on:click={() => removeTodo(todo)}
-          >
-            Delete <span class="visually-hidden">{todo.name}</span>
-          </button>
-        </div>
-
-    </li>
-  {:else}
-    <li>Nothing to do here!</li>
-  {/each}
-</ul>
-
+  <ul>
+    {#each toDoItems.filter(todo => !todo.completed) as todo}
+      <li transition:slide>
+        {todo.name}
+        <input type="checkbox" bind:checked={todo.completed} />
+      </li>
+    {/each}
+  </ul>
+</div>
 
 
 <style>
-    .visually-hidden {
-        display: none;
-    }
+
+  div {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+  }
+
 </style>
-
-
